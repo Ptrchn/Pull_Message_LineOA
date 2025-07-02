@@ -1,8 +1,8 @@
 เพิ่มไฟล์ .env 
 
 token = 'Channel access token'
-
 secretcode = 'Channel secret'
+
 -----------------------------------------------------------------------------------------------------------------
 
 ก่อนใช้งานต้อง npm i ก่อนและต้องเปิด public tunnel ด้วย localtunnel (หรือ ngrok, cloudflared)
