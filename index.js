@@ -1,7 +1,6 @@
 const express = require('express');
 const app = express();
 
-// 👇 ใช้ express.json() แทน middleware ของ LINE SDK
 app.use(express.json());
 
 function printTreeWithLines(obj, level = 0, isLast = true, prefix = '') {
@@ -27,43 +26,47 @@ function printTreeWithLines(obj, level = 0, isLast = true, prefix = '') {
     });
 }
 
-
-
-app.post('/webhook', (req, res) => {
+app.post('/webhook', async (req, res) => {
     const events = req.body.events;
 
     if (Array.isArray(events)) {
-        events.forEach(event => {
+        for (const event of events) {
             if (event.message && event.message.type === 'text') {
                 console.log('ผู้ใช้:', event.source.userId);
                 console.log('📩 ข้อความ:', event.message.text);
-                printTreeWithLines(event)
-                const textMassage = event.message.text;
-                if (textMassage.toLowerCase().includes('open')) {
-                    fetch('https://sonesambi.atlassian.net/rest/api/2/issue', {
-                        method: 'POST',
-                        headers: {
+                printTreeWithLines(event);
+
+                const textMessage = event.message.text;
+
+                if (textMessage.toLowerCase().includes('open')) {
+                    try {
+                        const response = await fetch('https://sonesambi.atlassian.net/rest/api/2/issue', {
+                            method: 'POST',
+                            headers: {
                             'Authorization': 'Basic ' + Buffer.from('sonesambi@gmail.com:ATATT3xFfGF0gLOlsz35civ001CsfdXUpogZk5WEJAZhfw0HoZXcNWoWisRyAc6yQ9P3PYEStc23rLBMBZVbbE2ACdaRlJkF32HAEYh_db-mcMhg_YCREwnsUmk-pAPBdkMzhRWLrlElb9hMCdBxc58O7CkoxBfIktbbXT2hnKpO4eTKuN1RYmo=62735F12').toString('base64'),
                             'Content-Type': 'application/json'
                         },
-                        body: JSON.stringify({
-                            "fields": {
-                                "project": { "key": "MNEJ" },
-                                "summary": "ทดสอบการสร้าง Issue ผ่าน line",
-                                "description": "สร้าง Issue ผ่าน line",
-                                "issuetype": { "name": "General request" },
-                                "priority": { "name": "Medium" }
-                            }
-                        })
-                    })
-                    .then(response => response.json())
-                    .then(data => console.log('Jira response:', data, '\nIssue created successfully!'))
-                    .catch(error => console.error('Jira error:', error));
+                            body: JSON.stringify({
+                                fields: {
+                                    project: { key: 'MNEJ' },
+                                    summary: 'ทดสอบการสร้าง Issue ผ่าน line 111',
+                                    description: 'สร้าง Issue ผ่าน line',
+                                    issuetype: { name: 'General request' },
+                                    priority: { name: 'Medium' }
+                                }
+                            })
+                        });
+
+                        const data = await response.json();
+                        console.log('🟢 Jira response:', data);
+                    } catch (error) {
+                        console.error('🔴 Jira error:', error);
+                    }
                 }
-        }});
+            }
+        }
     }
 
-    // ✅ ตอบกลับ 200 ให้ LINE ว่ารับสำเร็จแล้ว
     res.status(200).send('OK');
 });
 
