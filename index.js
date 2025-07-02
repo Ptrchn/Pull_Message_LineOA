@@ -1,5 +1,8 @@
 const express = require('express');
 const app = express();
+require('dotenv').config();
+const USERNAME = process.env.USERNAME;
+const TOKEN_API = process.env.TOKEN_API;
 
 app.use(express.json());
 
@@ -43,7 +46,7 @@ app.post('/webhook', async (req, res) => {
                         const response = await fetch('https://sonesambi.atlassian.net/rest/api/2/issue', {
                             method: 'POST',
                             headers: {
-                            'Authorization': 'Basic ' + Buffer.from('sonesambi@gmail.com:ATATT3xFfGF0gLOlsz35civ001CsfdXUpogZk5WEJAZhfw0HoZXcNWoWisRyAc6yQ9P3PYEStc23rLBMBZVbbE2ACdaRlJkF32HAEYh_db-mcMhg_YCREwnsUmk-pAPBdkMzhRWLrlElb9hMCdBxc58O7CkoxBfIktbbXT2hnKpO4eTKuN1RYmo=62735F12').toString('base64'),
+                            'Authorization': 'Basic ' + Buffer.from(`${USERNAME}:${TOKEN_API}`).toString('base64'),
                             'Content-Type': 'application/json'
                         },
                             body: JSON.stringify({
