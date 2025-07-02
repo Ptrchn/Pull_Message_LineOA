@@ -9,11 +9,13 @@
 ### 1. สร้าง `.env`
 
 ```env
-token='Channel access token'
-secretcode='Channel secret'
+USERNAME_JIRA='username_jira'
+TOKEN_API='token_jira'
 ````
 
-> ค่าทั้งสองหาได้จาก LINE Developers Console
+> ค่าทั้งสองนำมาจาก jira
+> Username : Email ที่สมัคร
+> Token Jira : https://id.atlassian.com/manage-profile/security/api-tokens
 
 ---
 
@@ -70,6 +72,7 @@ https://my-bot.loca.lt/webhook
 
 * ส่งข้อความจาก LINE OA
 * ดูผลใน Terminal (`console.log(event)`)
+* เช็ค Dashboard ใน Jira
 
 ---
 
