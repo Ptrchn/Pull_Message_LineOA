@@ -1,7 +1,7 @@
 const express = require('express');
 const app = express();
 require('dotenv').config();
-const USERNAME = process.env.USERNAME;
+const USERNAME_JIRA = process.env.USERNAME_JIRA;
 const TOKEN_API = process.env.TOKEN_API;
 
 app.use(express.json());
@@ -46,7 +46,7 @@ app.post('/webhook', async (req, res) => {
                         const response = await fetch('https://sonesambi.atlassian.net/rest/api/2/issue', {
                             method: 'POST',
                             headers: {
-                            'Authorization': 'Basic ' + Buffer.from(`${USERNAME}:${TOKEN_API}`).toString('base64'),
+                            'Authorization': 'Basic ' + Buffer.from(`${USERNAME_JIRA}:${TOKEN_API}`).toString('base64'),
                             'Content-Type': 'application/json'
                         },
                             body: JSON.stringify({
