@@ -6,28 +6,42 @@ const TOKEN_API = process.env.TOKEN_API;
 
 app.use(express.json());
 
-function printTreeWithLines(obj, level = 0, isLast = true, prefix = '') {
+function printTreeWithLines(obj, level = 0, isLast = true, prefix = '', indexMap = {}, layerCount = {}) {
     if (typeof obj !== 'object' || obj === null) {
         console.log(`${prefix}${isLast ? '└──' : '├──'} 📄 ${obj}`);
-        return;
+        return layerCount;
     }
 
     const entries = Object.entries(obj);
-    entries.forEach((entry, index) => {
+
+    if (!indexMap[level]) indexMap[level] = 1;
+    if (!layerCount[level]) layerCount[level] = 0;
+
+    entries.forEach((entry, idx) => {
         const key = entry[0];
         const val = entry[1];
-        const isLastEntry = index === entries.length - 1;
+        const isLastEntry = idx === entries.length - 1;
         const linePrefix = prefix + (isLast ? '    ' : '│   ');
         const branch = isLastEntry ? '└──' : '├──';
 
+        const displayIndex = indexMap[level]++;
+        layerCount[level]++;
+
+        const displayKey = `[${displayIndex}] ${key}`;
+
         if (typeof val === 'object' && val !== null) {
-            console.log(`${prefix}${branch}  ${key}`);
-            printTreeWithLines(val, level + 1, isLastEntry, linePrefix);
+            const subCount = Object.keys(val).length;
+            console.log(`${prefix}${branch} ${displayKey} (${subCount} children)`);
+            printTreeWithLines(val, level + 1, isLastEntry, linePrefix, indexMap, layerCount);
         } else {
-            console.log(`${prefix}${branch}  ${key}: ${val}`);
+            console.log(`${prefix}${branch} ${displayKey}: ${val}`);
         }
     });
+
+    return layerCount;
 }
+
+
 
 app.post('/webhook', async (req, res) => {
     const events = req.body.events;
@@ -35,9 +49,13 @@ app.post('/webhook', async (req, res) => {
     if (Array.isArray(events)) {
         for (const event of events) {
             if (event.message && event.message.type === 'text') {
-                console.log('ผู้ใช้:', event.source.userId);
-                console.log('📩 ข้อความ:', event.message.text);
-                printTreeWithLines(event);
+                console.log('UserID:', event.source.userId);
+                console.log('📩 Text:', event.message.text);
+                const layerSummary = printTreeWithLines(event);
+                console.log('\n📊 Layer Summary');
+                    Object.entries(layerSummary).forEach(([layer, count]) => {
+                        console.log(`layer ${parseInt(layer) + 1} = ${count}`);
+                    });
 
                 const textMessage = event.message.text;
 
@@ -62,6 +80,7 @@ app.post('/webhook', async (req, res) => {
 
                         const data = await response.json();
                         console.log('🟢 Jira response:', data);
+                        console.log('-------------------------------------------------')
                     } catch (error) {
                         console.error('🔴 Jira error:', error);
                     }
