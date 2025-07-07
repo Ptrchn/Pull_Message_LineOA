@@ -49,14 +49,16 @@ app.post('/webhook', async (req, res) => {
     if (Array.isArray(events)) {
         for (const event of events) {
             if (event.message && event.message.type === 'text') {
+                console.log('📦 Source: LINE');
                 console.log('UserID:', event.source.userId);
-                console.log('📩 Text:', event.message.text);
+                console.log('Line Message:', event.message.text);
                 const layerSummary = printTreeWithLines(event);
                 console.log('\n📊 Layer Summary');
                     Object.entries(layerSummary).forEach(([layer, count]) => {
                         console.log(`layer ${parseInt(layer) + 1} = ${count}`);
                     });
-
+                console.log('----------------------------------------------------------')
+ 
                 const textMessage = event.message.text;
 
                 if (textMessage.toLowerCase().includes('open')) {
@@ -98,9 +100,16 @@ app.post('/telegram-webhook', async (req, res) => {
     if (body.message && body.message.text) {
         const chatId = body.message.chat.id;
         const textMessage = body.message.text;
+        console.log('📦 Source: TELEGRAM');
+        console.log('Telegram Message:', textMessage);
+        console.log('ChatID:', chatId);
+        const layerSummary = printTreeWithLines(body, 0, true, '');
+        console.log('\n📊 Layer Summary');
+        Object.entries(layerSummary).forEach(([layer, count]) => {
+            console.log(`layer ${parseInt(layer) + 1} = ${count}`);
+        });
+        console.log('----------------------------------------------------------');
 
-        console.log('📩 Telegram Message:', textMessage);
-        printTreeWithLines(body, 0, true, '');  // <-- ใส่ parameter ให้ครบ
 
         if (textMessage.toLowerCase().includes('open')) {
             try {
