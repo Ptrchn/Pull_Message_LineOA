@@ -35,8 +35,8 @@ app.post('/webhook', async (req, res) => {
     if (Array.isArray(events)) {
         for (const event of events) {
             if (event.message && event.message.type === 'text') {
-                console.log('ผู้ใช้:', event.source.userId);
-                console.log('📩 ข้อความ:', event.message.text);
+                console.log('User_id:', event.source.userId);
+                console.log('📩 Message:', event.message.text);
                 printTreeWithLines(event);
 
                 const textMessage = event.message.text;
@@ -72,6 +72,47 @@ app.post('/webhook', async (req, res) => {
 
     res.status(200).send('OK');
 });
+
+app.post('/telegram-webhook', async (req, res) => {
+    const body = req.body;
+
+    if (body.message && body.message.text) {
+        const chatId = body.message.chat.id;
+        const textMessage = body.message.text;
+
+        console.log('📩 Telegram Message:', textMessage);
+        printTreeWithLines(body, 0, true, '');  // <-- ใส่ parameter ให้ครบ
+
+        if (textMessage.toLowerCase().includes('open')) {
+            try {
+                const response = await fetch('https://sonesambi.atlassian.net/rest/api/2/issue', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': 'Basic ' + Buffer.from(`${USERNAME_JIRA}:${TOKEN_API}`).toString('base64'),
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        fields: {
+                            project: { key: 'MNEJ' },
+                            summary: 'ทดสอบการสร้าง Issue ผ่าน Telegram',
+                            description: `สร้างจาก Telegram: ${textMessage}`,
+                            issuetype: { name: 'General request' },
+                            priority: { name: 'Medium' }
+                        }
+                    })
+                });
+
+                const data = await response.json();
+                console.log('🟢 Jira response:', data);
+            } catch (error) {
+                console.error('🔴 Jira error:', error);
+            }
+        }
+    }
+
+    res.status(200).send('OK');
+});
+
 
 app.get('/', (req, res) => {
     res.send('ok');
